@@ -1,0 +1,9 @@
+{
+  "name": "cf",
+  "version": "0.0.0",
+  "main": "lib/cf",
+  "dependencies": {
+    "bindings": "~1.0.0",
+    "NodObjC": "~0.0.13"
+  }
+}
