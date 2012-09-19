@@ -1,7 +1,6 @@
 var $ = require('NodObjC'),
     cf = require('..');
 
-var loop = cf.ref();
 $.import('Cocoa');
 
 var pool = $.NSAutoreleasePool('alloc')('init'),
@@ -52,3 +51,4 @@ var delegate = AppDelegate('alloc')('init')
 app('setDelegate', delegate)
 
 app('activateIgnoringOtherApps', true)
+app.loop = cf.ref();

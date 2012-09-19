@@ -20,22 +20,23 @@ Loop::Loop(CFRunLoopRef loop, CFStringRef mode) : cf_lp_(loop),
 
   // Get main port set and wake up port out of private loop fields
   // (YES, I KNOW IT'S HACKY)
-  CFRunLoopModeRef modes;
+  CFRunLoopModeRef* modes;
 
   // First - get real modes out of `_modes` set
   int mode_cnt = CFSetGetCount(cf_lp_->_modes);
-  modes = reinterpret_cast<CFRunLoopModeRef>(
-      new char[sizeof(*modes) * mode_cnt]);
-  CFSetGetValues(cf_lp_->_modes, (const void**) &modes);
+  modes = new CFRunLoopModeRef[mode_cnt];
+  CFSetGetValues(cf_lp_->_modes, const_cast<const void**>(
+        reinterpret_cast<void**>(modes)));
 
   // Second - find specific mode in list
   for (int i = 0; i < mode_cnt; i++) {
-    if (CFStringCompare(modes[i]._name, cf_mode_, 0) != 0) continue;
+    if (CFStringCompare(modes[i]->_name, cf_mode_, 0) != 0) continue;
 
     // Third - take port set out of it
-    main_ = modes[i]._portSet;
+    main_ = modes[i]->_portSet;
     break;
   }
+  delete[] modes;
 
   // Fourth - take wake up port out of loop
   wakeup_ = cf_lp_->_wakeUpPort;
