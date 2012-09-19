@@ -1,5 +1,4 @@
 #include "cf.h"
-#include "cf-headers.h"
 
 #include <stdlib.h> // abort
 #include <assert.h> // assert
@@ -14,20 +13,20 @@ namespace cf {
 using namespace node;
 using namespace v8;
 
-Loop::Loop(CF::CFRunLoopRef loop, CF::CFStringRef mode) : cf_lp_(loop),
+Loop::Loop(CFRunLoopRef loop, CFStringRef mode) : cf_lp_(loop),
                                                           cf_mode_(mode),
                                                           closed_(false) {
   int r;
 
   // Get main port set and wake up port out of private loop fields
   // (YES, I KNOW IT'S HACKY)
-  CF::CFRunLoopModeRef modes;
+  CFRunLoopModeRef modes;
 
   // First - get real modes out of `_modes` set
-  int mode_cnt = CF::CFSetGetCount(cf_lp_->_modes);
-  modes = reinterpret_cast<CF::CFRunLoopModeRef>(
+  int mode_cnt = CFSetGetCount(cf_lp_->_modes);
+  modes = reinterpret_cast<CFRunLoopModeRef>(
       new char[sizeof(*modes) * mode_cnt]);
-  CF::CFSetGetValues(cf_lp_->_modes, (const void**) &modes);
+  CFSetGetValues(cf_lp_->_modes, (const void**) &modes);
 
   // Second - find specific mode in list
   for (int i = 0; i < mode_cnt; i++) {
@@ -145,7 +144,7 @@ void Loop::OnClose(uv_handle_t* handle) {
 Handle<Value> Loop::New(const Arguments& args) {
   HandleScope scope;
 
-  Loop* loop = new Loop(CF::CFRunLoopGetCurrent(), CF::kCFRunLoopDefaultMode);
+  Loop* loop = new Loop(CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
   loop->Wrap(args.Holder());
 
   return scope.Close(args.Holder());
