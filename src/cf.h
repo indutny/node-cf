@@ -22,11 +22,16 @@ class Loop : ObjectWrap {
  public:
   Loop(CF::CFRunLoopRef loop, CF::CFStringRef mode);
   ~Loop();
+  void Close();
 
   static void Init(Handle<Object> target);
 
  protected:
+
   static Handle<Value> New(const Arguments& args);
+  static Handle<Value> AddRef(const Arguments& args);
+  static Handle<Value> RemRef(const Arguments& args);
+
   static void Worker(void* arg);
   static void Callback(uv_async_t* async, int status);
   static void OnClose(uv_handle_t* handle);
@@ -38,6 +43,7 @@ class Loop : ObjectWrap {
   mach_port_t wakeup_;
   uv_async_t* cb_;
   uv_thread_t thread_;
+  bool closed_;
 };
 
 } // namespace cf

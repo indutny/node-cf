@@ -15,7 +15,8 @@ using namespace node;
 using namespace v8;
 
 Loop::Loop(CF::CFRunLoopRef loop, CF::CFStringRef mode) : cf_lp_(loop),
-                                                          cf_mode_(mode) {
+                                                          cf_mode_(mode),
+                                                          closed_(false) {
   int r;
 
   // Get main port set and wake up port out of private loop fields
@@ -58,6 +59,14 @@ Loop::Loop(CF::CFRunLoopRef loop, CF::CFStringRef mode) : cf_lp_(loop),
 
 
 Loop::~Loop() {
+  Close();
+}
+
+
+void Loop::Close() {
+  if (closed_) return;
+  closed_ = true;
+
   int r;
 
   // Send signal
@@ -143,6 +152,29 @@ Handle<Value> Loop::New(const Arguments& args) {
 }
 
 
+Handle<Value> Loop::AddRef(const Arguments& args) {
+  HandleScope scope;
+
+  Loop* loop = ObjectWrap::Unwrap<Loop>(args.This());
+  loop->Ref();
+
+  return scope.Close(Null());
+}
+
+
+Handle<Value> Loop::RemRef(const Arguments& args) {
+  HandleScope scope;
+
+  Loop* loop = ObjectWrap::Unwrap<Loop>(args.This());
+  loop->Unref();
+  if (loop->refs_ == 0) {
+    loop->Close();
+  }
+
+  return scope.Close(Null());
+}
+
+
 void Loop::Init(Handle<Object> target) {
   HandleScope scope;
 
@@ -150,6 +182,9 @@ void Loop::Init(Handle<Object> target) {
 
   t->InstanceTemplate()->SetInternalFieldCount(1);
   t->SetClassName(String::NewSymbol("Loop"));
+
+  NODE_SET_PROTOTYPE_METHOD(t, "ref", AddRef);
+  NODE_SET_PROTOTYPE_METHOD(t, "unref", RemRef);
 
   target->Set(String::NewSymbol("Loop"), t->GetFunction());
 }

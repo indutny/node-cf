@@ -5,7 +5,9 @@ namespace CF {
 
 #include <CoreFoundation/CoreFoundation.h>
 
-#ifdef MAC_OS_X_VERSION_10_6
+#ifdef MAC_OS_X_VERSION_10_7
+#include "headers/cf-10-7.h"
+#elif MAC_OS_X_VERSION_10_6
 #include "headers/cf-10-6.h"
 #else
 #error "Unknown mac os version"
