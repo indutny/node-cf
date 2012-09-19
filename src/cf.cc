@@ -133,29 +133,10 @@ void Loop::OnClose(uv_handle_t* handle) {
 }
 
 
-template <class T>
-static T GetPointer(Handle<Object> value) {
-  Handle<Value> method = value->Get(String::NewSymbol("toBuffer"));
-  assert(method->IsFunction());
-
-  Handle<Value> result = method.As<Function>()->Call(value, 0, NULL);
-  assert(Buffer::HasInstance(result));
-
-  return reinterpret_cast<T>(Buffer::Data(result.As<Object>()));
-}
-
-
 Handle<Value> Loop::New(const Arguments& args) {
   HandleScope scope;
 
-  if (args.Length() < 2 || !args[0]->IsObject() || !args[1]->IsObject()) {
-    return ThrowException(String::New("Both arguments should be objects"));
-  }
-
-  CF::CFRunLoopRef lp = GetPointer<CF::CFRunLoopRef>(args[0].As<Object>());
-  CF::CFStringRef mode = GetPointer<CF::CFStringRef>(args[1].As<Object>());
-
-  Loop* loop = new Loop(lp, mode);
+  Loop* loop = new Loop(CF::CFRunLoopGetCurrent(), CF::kCFRunLoopDefaultMode);
   loop->Wrap(args.Holder());
 
   return scope.Close(args.Holder());
