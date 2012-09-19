@@ -22,8 +22,8 @@ struct __CFRunLoopMode {
   void* _observers;
   void* _timers;
   void* _portToV1SourceMap;
-  __CFPortSet _portSet;
-  singed long _observerMask;
+  mach_port_t _portSet;
+  signed long _observerMask;
   mach_port_t _timerPort;
 };
 
