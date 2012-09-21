@@ -50,5 +50,14 @@ AppDelegate.register()
 var delegate = AppDelegate('alloc')('init')
 app('setDelegate', delegate)
 
+setInterval(function() {
+  console.log('yay');
+}, 1000);
+
+setTimeout(function() {
+  cf.unref();
+}, 3000);
+
 app('activateIgnoringOtherApps', true)
 app.loop = cf.ref();
+app('run');
