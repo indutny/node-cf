@@ -21,6 +21,8 @@ class Loop : ObjectWrap {
 
   static void Init(Handle<Object> target);
 
+  inline uv_loop_t* uv() const { return uv_; }
+
  protected:
 
   static Handle<Value> New(const Arguments& args);
@@ -34,6 +36,7 @@ class Loop : ObjectWrap {
   CFStringRef cf_mode_;
   CFRunLoopSourceRef cb_;
 
+  uv_loop_t* uv_;
   uv_sem_t sem_;
   uv_thread_t thread_;
 

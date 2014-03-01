@@ -1,5 +1,8 @@
 #include "cf.h"
 
+#include <sys/types.h>
+#include <sys/event.h>
+#include <sys/time.h>
 #include <stdlib.h> // abort
 #include <assert.h> // assert
 
@@ -10,6 +13,7 @@ using namespace v8;
 
 Loop::Loop(CFRunLoopRef loop, CFStringRef mode) : cf_lp_(loop),
                                                   cf_mode_(mode),
+                                                  uv_(uv_default_loop()),
                                                   closed_(false) {
   int r;
 
@@ -57,7 +61,13 @@ void Loop::Worker(void* arg) {
   while (true) {
     if (loop->closed_) break;
 
-    uv_wait(uv_default_loop(), 0);
+    // Wait 1 sec maximum
+    int timeout = uv_backend_timeout(loop->uv());
+
+    struct timespec ts;
+    ts.tv_sec = timeout / 1000;
+    ts.tv_nsec = (timeout - (ts.tv_sec * 1000)) * 1000000;
+    kevent(uv_backend_fd(loop->uv()), NULL, 0, NULL, 0, &ts);
 
     CFRunLoopSourceSignal(loop->cb_);
     CFRunLoopWakeUp(loop->cf_lp_);
@@ -70,7 +80,7 @@ void Loop::Worker(void* arg) {
 void Loop::Perform(void* arg) {
   Loop* loop = reinterpret_cast<Loop*>(arg);
 
-  uv_run_once(uv_default_loop());
+  uv_run(uv_default_loop(), UV_RUN_NOWAIT);
   uv_sem_post(&loop->sem_);
 }
 
